@@ -2,8 +2,8 @@ import nstbot
 
 
 bot = nstbot.PushBot()
-#bot.connect(connection.Serial('/dev/ttyUSB0', baud=4000000))
-bot.connect(nstbot.Socket('10.162.177.135'))
+bot.connect(nstbot.Serial('/dev/ttyUSB0', baud=4000000))
+# bot.connect(nstbot.Socket('10.162.177.135'))
 bot.laser(150)
 bot.track_frequencies(freqs=[50, 100, 150])
 bot.retina(True)
