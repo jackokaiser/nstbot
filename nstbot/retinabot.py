@@ -37,14 +37,25 @@ class RetinaBot(nstbot.NSTBot):
         self.sensor_map[name] = bit
         self.sensor_scale[bit] = 1.0 / range
 
-    def activate_sensors(self, period=0.1, **names):
+    def activate_sensors(self, period=0.1, **sensors):
+        '''activate / disactivate sensors. Usage: activate_sensors(accel=True, gyro=False)'''
         bits = 0
-        for name in names:
+        enable = [ name for name in sensors.keys() if sensors[name] ]
+        disable = [ name for name in sensors.keys() if not sensors[name] ]
+        for name in enable:
             bit = self.sensor_map[name]
             bits += 1 << bit
         period_ms = int(period * 1000)
         cmd = '!S+%d,%d\n' % (bits, period_ms)
         self.connection.send(cmd)
+
+        bits = 0
+        for name in disable:
+            bit = self.sensor_map[name]
+            bits += 1 << bit
+        cmd = '!S-%d\n' % bits
+        self.connection.send(cmd)
+
 
     def get_sensor(self, name):
         return self.sensor[name]
