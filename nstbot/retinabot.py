@@ -1,8 +1,7 @@
 from . import nstbot
 import numpy as np
 import threading
-
-
+import math
 
 class RetinaBot(nstbot.NSTBot):
     def initialize(self):
@@ -16,6 +15,7 @@ class RetinaBot(nstbot.NSTBot):
         self.sensor = {}
         self.sensor_scale = {}
         self.sensor_map = {}
+        # see https://inivation.com/support/hardware/edvs/#uart-protocol-pc-board
         self.add_sensor('battery', bit=0, range=1.0, length=1)
         self.add_sensor('adc0', bit=1, range=1024, length=1)
         self.add_sensor('adc1', bit=2, range=1024, length=1)
@@ -26,8 +26,22 @@ class RetinaBot(nstbot.NSTBot):
         self.add_sensor('gyro', bit=7, range=32768, length=3)
         self.add_sensor('accel', bit=8, range=32768, length=3)
         self.add_sensor('compass', bit=9, range=4096, length=3)
-        self.add_sensor('temperature', bit=10, range=1, length=1)
-        self.add_sensor('quaternion', bit=11, range=1, length=4)
+        # these require hexadecimal to float conversion
+        # self.add_sensor('cal_gyro', bit=10, range=math.pow(2, -16), length=3)
+        # self.add_sensor('cal_accel', bit=11, range=math.pow(2, -16), length=3)
+        # self.add_sensor('cal_compass', bit=12, range=math.pow(2, -16), length=3)
+        # self.add_sensor('quaternion', bit=13, range=1, length=4)
+        # self.add_sensor('heading', bit=16, range=math.pow(2,-8), length=1)
+        # self.add_sensor('linear_acc', bit=17, range=math.pow(2, -8), length=3)
+
+        # disable all sensors initially
+        sensor_names = filter(lambda s: isinstance(s, str), self.sensor.keys())
+        self.activate_sensors(0.,
+                              **dict(zip(
+                                  sensor_names,
+                                  [False] * len(sensor_names)
+                              ))
+        )
 
     def add_sensor(self, name, bit, range, length):
         value = np.zeros(length)

@@ -12,9 +12,6 @@ class PushBotRos(pushbot.PushBot):
     def initialize(self):
         self.sensor_publishers = {}
         super(PushBotRos, self).initialize()
-        self.activate_sensors(0., battery=False,
-                              adc0=False, adc1=False, adc2=False, adc3=False, adc4=False, adc5=False,
-                              gyro=False, accel=False, compass=False, temperature=False, quaternion=False)
 
         self.motor_sub = rospy.Subscriber("action", Float64MultiArray, self.motor_callback)
         self.event_pub = rospy.Publisher("dvs/events", EventArray, queue_size=1)
@@ -64,7 +61,7 @@ class PushBotRos(pushbot.PushBot):
             traceback.print_exc()
 
     def motor_callback(self, msg):
-        self.action = np.array(msg.data) * 0.05
+        self.action = np.array(msg.data) * 0.15
         self.last_action_time = rospy.get_time()
 
     def control(self, *args):
