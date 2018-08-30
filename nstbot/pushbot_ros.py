@@ -13,10 +13,10 @@ class PushBotRos(pushbot.PushBot):
         self.sensor_publishers = {}
         super(PushBotRos, self).initialize()
 
-        self.motor_sub = rospy.Subscriber("action", Float64MultiArray, self.motor_callback)
+        self.action_sub = rospy.Subscriber("action", Float64MultiArray, self.action_callback)
         self.event_pub = rospy.Publisher("dvs/events", EventArray, queue_size=1)
 
-        self.action = [0., 0.]
+        self.action = [0., 0., 0.]
         self.last_action_time = -float('inf')
         self.max_action_delay = 0.2
         self.filtered_acc = 0.
@@ -51,7 +51,6 @@ class PushBotRos(pushbot.PushBot):
                 scale = self.sensor_scale[index]
                 values = [float(x)*scale for x in data[1:]]
                 self.sensor[index] = values
-                self.sensor[index] = values
                 self.sensor[self.sensor_map[index]] = values
                 msg = Float64MultiArray(data = values)
                 self.sensor_publishers[self.sensor_map[index]].publish(msg)
@@ -60,12 +59,18 @@ class PushBotRos(pushbot.PushBot):
             import traceback
             traceback.print_exc()
 
-    def motor_callback(self, msg):
-        self.action = np.array(msg.data) * 0.15
+    def action_callback(self, msg):
+        self.action = np.array(msg.data)
+        self.action[0:2] = self.action[0:2] * 0.15 # left / right motor
+        if len(self.action) > 2:
+            self.action[2] = (int(self.action[2]) + 1) * 250 # laser frequency (500 max)
         self.last_action_time = rospy.get_time()
 
     def control(self, *args):
         if rospy.get_time() - self.last_action_time < self.max_action_delay:
             self.motor(self.action[0], self.action[1])
+            if len(self.action) > 2:
+                self.laser(self.action[2])
         else:
             self.motor(0., 0.)
+            self.laser(0)
