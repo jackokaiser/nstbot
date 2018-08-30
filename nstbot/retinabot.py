@@ -14,6 +14,7 @@ class RetinaBot(nstbot.NSTBot):
         self.track_periods = None
         self.sensor = {}
         self.sensor_scale = {}
+        self.sensor_base = {}
         self.sensor_map = {}
         # see https://inivation.com/support/hardware/edvs/#uart-protocol-pc-board
         self.add_sensor('battery', bit=0, range=1.0, length=1)
@@ -30,12 +31,12 @@ class RetinaBot(nstbot.NSTBot):
         self.add_sensor('event_rate', bit=21, range=1000000, length=1)
         self.add_sensor('motor_ticks', bit=28, range=int('1' * 31, 2), length=2)
         # these require hexadecimal to float conversion
-        # self.add_sensor('cal_gyro', bit=10, range=math.pow(2, -16), length=3)
-        # self.add_sensor('cal_accel', bit=11, range=math.pow(2, -16), length=3)
-        # self.add_sensor('cal_compass', bit=12, range=math.pow(2, -16), length=3)
-        # self.add_sensor('quaternion', bit=13, range=1, length=4)
-        # self.add_sensor('heading', bit=16, range=math.pow(2,-8), length=1)
-        # self.add_sensor('linear_acc', bit=17, range=math.pow(2, -8), length=3)
+        self.add_sensor('cal_gyro', bit=10, range=math.pow(2, -16), length=3, base=16)
+        self.add_sensor('cal_accel', bit=11, range=math.pow(2, -16), length=3, base=16)
+        self.add_sensor('cal_compass', bit=12, range=math.pow(2, -16), length=3, base=16)
+        self.add_sensor('quaternion', bit=13, range=math.pow(2, -30), length=4, base=16)
+        self.add_sensor('heading', bit=16, range=math.pow(2,-8), length=1, base=16)
+        self.add_sensor('linear_acc', bit=17, range=math.pow(2, -8), length=3, base=16)
 
         # disable all sensors initially
         sensor_names = filter(lambda s: isinstance(s, str), self.sensor.keys())
@@ -46,13 +47,14 @@ class RetinaBot(nstbot.NSTBot):
                               ))
         )
 
-    def add_sensor(self, name, bit, range, length):
+    def add_sensor(self, name, bit, range, length, base=10):
         value = np.zeros(length)
         self.sensor[bit] = value
         self.sensor[name] = value
         self.sensor_map[bit] = name
         self.sensor_map[name] = bit
         self.sensor_scale[bit] = 1.0 / range
+        self.sensor_base[bit] = base
 
     def activate_sensors(self, period=0.1, **sensors):
         '''activate / disactivate sensors. Usage: activate_sensors(accel=True, gyro=False)'''
@@ -236,7 +238,8 @@ class RetinaBot(nstbot.NSTBot):
                 data = message[2:].split()
                 index = int(data[0])
                 scale = self.sensor_scale[index]
-                values = [float(x)*scale for x in data[1:]]
+                base = self.sensor_base[index]
+                values = [float(int(x, base))*scale for x in data[1:]]
                 self.sensor[index] = values
                 self.sensor[self.sensor_map[index]] = values
         except:
