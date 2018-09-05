@@ -9,7 +9,7 @@ import sys
 from . import pushbot
 
 class PushBotRos(pushbot.PushBot):
-    def initialize(self):
+    def initialize(self, control_loop_dt=1/50.):
         self.sensor_publishers = {}
         super(PushBotRos, self).initialize()
 
@@ -20,6 +20,7 @@ class PushBotRos(pushbot.PushBot):
         self.last_action_time = -float('inf')
         self.max_action_delay = 0.2
         self.filtered_acc = 0.
+        rospy.Timer(rospy.Duration(control_loop_dt), self.control)
 
     def add_sensor(self, name, bit, range, length, base=10):
         super(PushBotRos, self).add_sensor(name, bit, range, length, base)

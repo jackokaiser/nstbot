@@ -28,15 +28,15 @@ class RetinaBot(nstbot.NSTBot):
         self.add_sensor('accel', bit=8, range=32767, length=3)
         self.add_sensor('compass', bit=9, range=4095, length=3)
         self.add_sensor('motor_currents', bit=20, range=9999, length=2)
-        self.add_sensor('event_rate', bit=21, range=1000000, length=1)
-        self.add_sensor('motor_ticks', bit=28, range=int('1' * 31, 2), length=2)
+        self.add_sensor('event_rate', bit=21, range=1, length=1)
+        self.add_sensor('motor_ticks', bit=28, range=1, length=2)
         # these require hexadecimal to float conversion
-        self.add_sensor('cal_gyro', bit=10, range=math.pow(2, -16), length=3, base=16)
-        self.add_sensor('cal_accel', bit=11, range=math.pow(2, -16), length=3, base=16)
-        self.add_sensor('cal_compass', bit=12, range=math.pow(2, -16), length=3, base=16)
-        self.add_sensor('quaternion', bit=13, range=math.pow(2, -30), length=4, base=16)
-        self.add_sensor('heading', bit=16, range=math.pow(2,-8), length=1, base=16)
-        self.add_sensor('linear_acc', bit=17, range=math.pow(2, -8), length=3, base=16)
+        self.add_sensor('cal_gyro', bit=10, range=math.pow(2, 16), length=3, base=16)
+        self.add_sensor('cal_accel', bit=11, range=math.pow(2, 16), length=3, base=16)
+        self.add_sensor('cal_compass', bit=12, range=math.pow(2, 16), length=3, base=16)
+        self.add_sensor('quaternion', bit=13, range=math.pow(2, 30), length=4, base=16)
+        self.add_sensor('heading', bit=16, range=math.pow(2, 8), length=1, base=16)
+        self.add_sensor('linear_acc', bit=17, range=math.pow(2, 8), length=3, base=16)
 
         # disable all sensors initially
         sensor_names = filter(lambda s: isinstance(s, str), self.sensor.keys())
